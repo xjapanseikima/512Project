@@ -17,7 +17,8 @@ server <- function(input, output, session) {
     data = read.csv("../Sleep_health_and_lifestyle_dataset.csv")
     #Reactive
     filtered_data <- reactive({
-        chooseData <- data
+        selected <- c(input$choices)
+        choosenData <- data[selected]
     })
     x <- reactive({
         data[,input$xcol]
@@ -27,7 +28,10 @@ server <- function(input, output, session) {
         data[,input$ycol]
     })
     
-
+    z <- reactive({
+        data[,input$zcol]
+    })
+    
    # Age vs Daily Step
    # Occupation vs Daily Steps
     output$scatterplot <- renderPlotly(
@@ -44,16 +48,16 @@ server <- function(input, output, session) {
             y = y(), 
             type = 'bar')
     )
-    
+
     output$distPlot <- renderPlot({
         # generate bins based on input$bins from ui.R
         x = x()
         bins <- seq(min(x), max(x), length.out = input$bins + 1)
         # draw the histogram with the specified number of bins
         hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Age',
+             xlab = x(),
              main = 'Age Distribution')
-        
+
     })
     
     
@@ -69,17 +73,24 @@ server <- function(input, output, session) {
         if (length(s)) points(data[s, , drop = FALSE], pch = 19, cex = 2)
     })
     
-    makeCard <- function(title, content, size = 12, style = "") {
-        div(
-            class = glue("card ms-depth-8 ms-sm{size} ms-xl{size}"),
-            style = style,
-            Stack(
-                tokens = list(childrenGap = 5),
-                Text(variant = "large", title, block = TRUE),
-                content
-            )
-        )
-    }
+    output$threeDPlot <- renderPlotly(
+        fig <- plot_ly(data, x = x(), y = y(), z = z(),
+                       marker = list(color = x(), colorscale = c('#FFE1A1', '#683531'), showscale = TRUE))
+    )
+    
+    
+    output$txt <- renderPrint({
+        selected <- c(input$choices)
+        print(selected)
+        cormat <- round(cor(filtered_data()),2)
+        head(cormat)
+    })
+    output$corrPlot <- renderPlot({
+        cormat <- round(cor(filtered_data()),2)
+        melted_cormat <- melt(cormat)
+        ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +  geom_tile()
+        
+    })
 }
 
 
