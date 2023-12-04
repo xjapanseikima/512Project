@@ -1,0 +1,114 @@
+---
+title: "Untitled"
+author: "Qiaoyi Wu"
+date: "2023-12-01"
+output: html_document
+---
+
+```{r}
+library(shiny)
+library(shiny.fluent)
+library(tibble)
+library(DT)
+library(shinydashboard)
+library(ggplot2)
+library(dplyr)
+library(reshape2)
+library(plotly)
+```
+
+
+```{r}
+# Define UI
+ui <- fluidPage(
+  titlePanel("Explore Factors that May Affect Sleep Quality"),
+  HTML("<br>"),
+  HTML("<br>"),
+  HTML("<p style='font-size: 16px;'>by Chun-Yu Tseng, Hang Lu, Qiaoyi Wu</p>"),
+  HTML("<br>"),
+  HTML("<br>"),
+  HTML("<p style='font-size: 16px;'>In this profound exploration of 400 individuals' lives, 
+       the Sleep Health and Lifestyle Dataset unveils the intricate dance between work, health, and sleep quality. 
+       Immerse yourself in a wealth of data covering sleep duration, quality, and lifestyle factors such as physical 
+       activity levels and stress ratings. With a keen eye on cardiovascular health, this dataset delves into blood 
+       pressure and heart rate metrics. The presence or absence of sleep disorders, including Insomnia and Sleep Apnea, 
+       adds a critical layer to understanding the holistic well-being of each participant. Join us in deciphering the 
+       profound connections within work, health, and the quality of sleep.</p>"),
+  dashboardPage(
+    dashboardHeader(title = "Sleep Health and Lifestyle Dashboard"),
+    dashboardSidebar(
+      sidebarMenu(
+        menuItem("Description Table", tabName = "Description Table"),
+        menuItem("Scatter Plot", tabName = "scatter"),
+        menuItem("Box Plot", tabName = "box"),
+        menuItem("Histogram", tabName = "histogram")
+      )
+    ),
+    dashboardBody(
+      tabItems(
+        tabItem(
+          tabName = "Description Table",
+          h2("Data Table"),
+          DTOutput("table")
+        ),
+        tabItem(
+          tabName = "scatter",
+          h2("Scatter Plot"),
+          # Add inputs for x and y columns
+          selectInput("xcol_scatter", "X-axis variable", choices = colnames(data)),
+          selectInput("ycol_scatter", "Y-axis variable", choices = colnames(data)),
+          plotlyOutput("scatterplot")
+        ),
+        tabItem(
+          tabName = "box",
+          h2("Box Plot"),
+          # Add inputs for x and y columns
+          selectInput("xcol_box", "X-axis variable", choices = colnames(data)),
+          selectInput("ycol_box", "Y-axis variable", choices = colnames(data)),
+          plotlyOutput("box")
+        ),
+        tabItem(
+          tabName = "histogram",
+          h2("Histogram"),
+          # Add inputs for x column
+          selectInput("xcol_hist", "X-axis variable", choices = colnames(data)),
+          sliderInput("bins", "Number of bins", min = 1, max = 100, value = 50),
+          plotOutput("distPlot")
+        )
+      )
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  # Reading Data as a reactive expression
+  data <- reactive({
+    read.csv("/Sleep_health_and_lifestyle_dataset.csv")
+  })
+
+  output$table <- DT::renderDataTable({
+    data()
+  }, options = list(
+    pageLength = 10,
+    initComplete = I('function(setting, json) { }')
+  ))
+  
+  output$scatterplot <- renderPlotly({
+    plot_ly(data(), x = ~data()[, input$xcol_scatter], y = ~data()[, input$ycol_scatter], type = 'scatter', mode = 'markers')
+  })
+
+  output$box <- renderPlotly({
+    plot_ly(data(), x = ~data()[, input$xcol_box], y = ~data()[, input$ycol_box], type = 'box')
+  })
+
+  output$distPlot <- renderPlot({
+    x <- data()[, input$xcol_hist]
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    hist(x, breaks = bins, col = 'darkgray', border = 'white', xlab = input$xcol_hist, main = 'Age Distribution')
+  })
+
+
+}
+
+shinyApp(ui, server)
+```

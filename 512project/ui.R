@@ -24,7 +24,14 @@ ui <- fluidPage(
   HTML("<p style='font-size: 16px;'>Description</p>"),
   HTML("<br>"),
   HTML("<p style='font-size: 16px;'>This data allows exploration and analysis of relationships between various health and lifestyle factors, potentially enabling insights into how sleep, physical activity, stress, and other factors relate to overall health and well-being. Analyzing this dataset could help identify correlations or patterns influencing individuals' health conditions and sleep-related issues.
-Overall, we have a several conclusion of what we found in these datasets</p>"),
+       Overall, we have a several conclusion of what we found in these datasets</p>"),
+  HTML("<br>"),
+  HTML("1. Physical activity vs sleep quality：Physical activity positively correlates with sleep quality. Higher levels of physical activity are associated with better sleep quality."),
+  HTML("<br>"),
+  HTML("2. Stress level vs blood pressure:  Stress level's impact on blood pressure is complex. While common belief suggests higher stress may lead to elevated blood pressure, this dataset doesn’t provide strong evidence to support it."),
+  HTML("<br>"),
+  HTML("3. Daily steps vs blood pressure: Daily steps are inversely correlated with blood pressure in this data. Individuals with more daily steps tend to have lower blood pressure."),
+  HTML("<br>"),
   sidebarLayout(
     sidebarPanel(
       sliderInput("bins","Number of bins:", min = 1, max = 60, value = 10),
